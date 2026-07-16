@@ -1,0 +1,279 @@
+/* ============================================================
+   SIGNAL DESIGN SYSTEM
+   A visual system modeled after oscilloscope / signal-analysis
+   consoles. Every token here serves the metaphor.
+   ============================================================ */
+
+@import "tailwindcss";
+
+/* --- Design Tokens (CSS Custom Properties) --- */
+:root {
+  --void: #0a0a0c;
+  --void-light: #111114;
+  --signal: #39ff88;
+  --signal-dim: rgba(57, 255, 136, 0.2);
+  --signal-glow: rgba(57, 255, 136, 0.4);
+  --text-primary: #e8e6e3;
+  --text-secondary: #7a7a7d;
+  --hairline: #222225;
+  --glitch-red: #ff3939;
+  --glitch-cyan: #39c5ff;
+
+  --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+  --font-display: 'Space Grotesk', 'Arial', sans-serif;
+
+  --ease-sharp: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-mechanical: cubic-bezier(0.25, 0, 0.25, 1);
+
+  --space-xs: 0.5rem;
+  --space-sm: 1rem;
+  --space-md: 2rem;
+  --space-lg: 4rem;
+  --space-xl: 6rem;
+  --space-2xl: 8rem;
+  --space-section: 10rem;
+}
+
+/* --- Global Reset & Base --- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--void);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.6;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* Hide default cursor on desktop — we use a custom reticle */
+@media (pointer: fine) {
+  * {
+    cursor: none !important;
+  }
+}
+
+/* --- Selection --- */
+::selection {
+  background: var(--signal-dim);
+  color: var(--signal);
+}
+
+/* --- Focus States: Signal-lock ring --- */
+*:focus-visible {
+  outline: 1px solid var(--signal);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 4px var(--signal-dim);
+}
+
+/* --- Scrollbar (webkit) --- */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: var(--void);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--hairline);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--signal-dim);
+}
+
+/* --- Typography --- */
+.font-mono {
+  font-family: var(--font-mono);
+}
+.font-display {
+  font-family: var(--font-display);
+}
+
+.text-signal { color: var(--signal); }
+.text-primary { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+
+/* --- Hairline Rules --- */
+.hairline {
+  border: none;
+  height: 1px;
+  background: var(--hairline);
+  width: 100%;
+}
+.hairline-v {
+  width: 1px;
+  background: var(--hairline);
+  height: 100%;
+}
+
+/* --- HUD Annotations --- */
+.hud-annotation {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  user-select: none;
+}
+
+/* --- Scan Line Overlay ---
+   A subtle horizontal line that sweeps down the page,
+   like a CRT refresh. Pure atmosphere. */
+.scan-line-overlay {
+  pointer-events: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.03) 2px,
+    rgba(0, 0, 0, 0.03) 4px
+  );
+}
+
+/* --- Glitch Keyframes --- */
+@keyframes glitch-shift-1 {
+  0% { clip-path: inset(40% 0 61% 0); transform: translateX(-2px); }
+  20% { clip-path: inset(92% 0 1% 0); transform: translateX(2px); }
+  40% { clip-path: inset(43% 0 1% 0); transform: translateX(-1px); }
+  60% { clip-path: inset(25% 0 58% 0); transform: translateX(1px); }
+  80% { clip-path: inset(54% 0 7% 0); transform: translateX(-2px); }
+  100% { clip-path: inset(58% 0 43% 0); transform: translateX(0); }
+}
+
+@keyframes glitch-shift-2 {
+  0% { clip-path: inset(65% 0 13% 0); transform: translateX(2px); }
+  20% { clip-path: inset(79% 0 14% 0); transform: translateX(-2px); }
+  40% { clip-path: inset(48% 0 28% 0); transform: translateX(0); }
+  60% { clip-path: inset(3% 0 80% 0); transform: translateX(2px); }
+  80% { clip-path: inset(10% 0 70% 0); transform: translateX(-1px); }
+  100% { clip-path: inset(30% 0 35% 0); transform: translateX(1px); }
+}
+
+@keyframes cursor-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+@keyframes pulse-signal {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes sweep-in {
+  from { transform: scaleX(0); transform-origin: left; }
+  to { transform: scaleX(1); transform-origin: left; }
+}
+
+/* --- Section Layout --- */
+.signal-section {
+  position: relative;
+  padding: var(--space-section) var(--space-lg);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section-header {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--signal);
+  margin-bottom: var(--space-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.section-header::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--hairline);
+}
+
+/* --- Interactive Element Base --- */
+.signal-link {
+  color: var(--text-primary);
+  text-decoration: none;
+  position: relative;
+  transition: color 0.2s var(--ease-mechanical);
+}
+
+.signal-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: var(--signal);
+  transition: width 0.3s var(--ease-sharp);
+}
+
+.signal-link:hover {
+  color: var(--signal);
+}
+
+.signal-link:hover::after {
+  width: 100%;
+}
+
+/* --- Reduced Motion ---
+   Canvas stops animating (static frame shown),
+   glitch transitions become instant cuts,
+   reveals keep structure but lose stagger delays. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .scan-line-overlay {
+    display: none;
+  }
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+  :root {
+    --space-section: 5rem;
+    --space-lg: 2rem;
+  }
+
+  .signal-section {
+    padding: var(--space-section) var(--space-md);
+  }
+
+  body {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .signal-section {
+    padding: var(--space-xl) var(--space-sm);
+  }
+}

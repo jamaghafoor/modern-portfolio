@@ -21,7 +21,7 @@ Ensure you have Node.js and `npm` installed.
 
 ```bash
 # Clone the repo
-git clone https://github.com/jamaghafoor/modern-portfolio.git
+git clone https://github.com/jamaghafoor/abdulghafoor-portfolio.git
 cd modern-portfolio
 
 # Install dependencies
